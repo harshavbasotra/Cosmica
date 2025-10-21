@@ -1,0 +1,24 @@
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-left">
+            <a href="/dashboard" class="nav-brand"><%= brandName %></a>
+        </div>
+        <div class="nav-center">
+            <div class="nav-user">
+                <div class="user-avatar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <span class="user-name"><%= user.email.split('@')[0] %></span>
+                <% if (user.role === 'admin') { %>
+                    <span class="user-badge">Admin</span>
+                <% } %>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-wallet">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                <span class="wallet-balance">$<%= (user.credits || 0).toFixed(2) %></span>
+            </div>
+        </div>
+    </div>
+</nav>

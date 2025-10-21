@@ -1,0 +1,32 @@
+# Cosmica Dashboard Configuration
+# Developed by Danish - https://danishfolio.cc
+
+# Branding Configuration
+branding:
+  name: "Cosmica"  # Your hosting brand name (appears in titles, headers, etc.)
+
+# Server Configuration
+server:
+  port: 3000
+  sessionSecret: "CHANGE_THIS_TO_A_RANDOM_SECRET_STRING_IN_PRODUCTION"
+  
+# Admin Account (Created on first startup)
+admin:
+  email: "set-your-admin-email-here"
+  password: "set-your-admin-password-here"
+  
+# Pterodactyl Panel Configuration
+pterodactyl:
+  url: "set-your-ptero-panel-url-here"
+  apiKey: "set-your-ptero-panel-api-key-here"  # Application API Key
+  clientKey: "set-your-ptero-panel-client-key-here"  # Client API Key for real-time stats
+  
+# Security Settings
+security:
+  rateLimitWindowMs: 90000  # 15 minutes
+  rateLimitMaxRequests: 300
+  sessionMaxAge: 86400000  # 24 hours
+  
+# Database
+database:
+  path: "./database.sqlite"

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - <%= brandName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dashboard-page">
+    <%- include('partials/navbar') %>
+
+    <main class="main-content-full">
+        <!-- Top Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item-inline">
+                <span class="stat-label-inline">Available Plans</span>
+                <span class="stat-value-inline"><%= plans ? plans.length : 0 %></span>
+            </div>
+        </div>
+
+        <div class="servers-container">
+            <div class="servers-header">
+                <h2>Purchase Instance</h2>
+            </div>
+
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="alert alert-success">
+                    <%= success %>
+                </div>
+            <% } %>
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <!-- Server Plans Grid -->
+            <div class="servers-grid-new">
+                <% if (!plans || plans.length === 0) { %>
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 1rem; opacity: 0.3;"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
+                        <h3>No Plans Available</h3>
+                        <p>Check back later for server plans</p>
+                    </div>
+                <% } else { %>
+                    <% plans.forEach(plan => { %>
+                        <div class="server-card-new plan-card-wrapper <%= plan.category %>">
+                            <div class="plan-header">
+                                <h3 class="plan-name"><%= plan.name %></h3>
+                                <div class="plan-price">
+                                    <span class="price-amount">$<%= plan.price.toFixed(2) %></span>
+                                    <span class="price-period">/<%= plan.billing_cycle || 'monthly' %></span>
+                                </div>
+                            </div>
+
+                            <% if (plan.description) { %>
+                                <p class="plan-description"><%= plan.description %></p>
+                            <% } %>
+
+                            <div class="plan-features">
+                                <div class="plan-feature">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    <span><%= plan.cpu %>% CPU</span>
+                                </div>
+                                <div class="plan-feature">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                                    <span><%= plan.ram %>MB RAM</span>
+                                </div>
+                                <div class="plan-feature">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    <span><%= plan.disk %>MB Disk</span>
+                                </div>
+                                <% if (plan.databases > 0) { %>
+                                    <div class="plan-feature">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/></svg>
+                                        <span><%= plan.databases %> Database<%= plan.databases > 1 ? 's' : '' %></span>
+                                    </div>
+                                <% } %>
+                                <% if (plan.backups > 0) { %>
+                                    <div class="plan-feature">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5"/></svg>
+                                        <span><%= plan.backups %> Backup<%= plan.backups > 1 ? 's' : '' %></span>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <% 
+                            let stockAvailable = true;
+                            let stockText = '';
+                            if (plan.stock_limit > 0) {
+                                const remaining = plan.stock_limit - plan.stock_used;
+                                stockAvailable = remaining > 0;
+                                stockText = remaining + ' left';
+                            }
+                            %>
+
+                            <% if (stockAvailable) { %>
+                                <button class="plan-btn purchase-plan-btn" 
+                                        data-plan-id="<%= plan.id %>" 
+                                        data-plan-name="<%= plan.name %>" 
+                                        data-plan-price="<%= plan.price %>">
+                                    Purchase Now
+                                    <% if (stockText) { %>
+                                        <span style="font-size: 0.85rem; opacity: 0.8; margin-left: 0.5rem;">(<%= stockText %>)</span>
+                                    <% } %>
+                                </button>
+                            <% } else { %>
+                                <button class="plan-btn" disabled style="opacity: 0.5; cursor: not-allowed;">
+                                    Out of Stock
+                                </button>
+                            <% } %>
+                        </div>
+                    <% }) %>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <%- include('partials/dock') %>
+
+    <!-- Purchase Modal -->
+    <div id="purchaseModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Purchase Server</h2>
+            </div>
+            
+            <form action="/dashboard/instances/purchase" method="POST" id="purchaseForm">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="plan_id" id="purchase_plan_id">
+                
+                <div class="purchase-summary">
+                    <div style="margin-bottom: 1rem;">
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Selected Plan</div>
+                        <div style="font-size: 1.25rem; font-weight: 600;" id="purchase_plan_name"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                        <span style="font-size: 0.9rem; color: var(--text-secondary);">Total Cost</span>
+                        <span style="font-size: 1.5rem; font-weight: 700; color: #8b5cf6;" id="purchase_price">$0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; margin-top: 0.5rem; background: rgba(255, 255, 255, 0.05); border-radius: 12px;">
+                        <span style="font-size: 0.9rem;">Your Balance</span>
+                        <span style="font-size: 1.125rem; font-weight: 600;">$<%= (user.credits || 0).toFixed(2) %></span>
+                    </div>
+                </div>
+                
+                <div class="admin-form-group" style="margin-top: 1.5rem;">
+                    <label class="admin-form-label">Server Name</label>
+                    <input type="text" 
+                           name="server_name" 
+                           required 
+                           placeholder="My Awesome Server"
+                           class="admin-input"
+                           maxlength="40">
+                    <small style="color: var(--text-secondary); font-size: 0.85rem;">Choose a memorable name for your server</small>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="submit" class="action-btn action-btn-primary" id="confirmPurchaseBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Confirm Purchase
+                    </button>
+                    <button type="button" id="closePurchaseModal" class="btn-cancel">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const purchaseModal = document.getElementById('purchaseModal');
+        const closePurchaseBtn = document.getElementById('closePurchaseModal');
+        const userBalance = <%= user.credits || 0 %>;
+        
+        // Purchase plan button handlers
+        document.querySelectorAll('.purchase-plan-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const planId = this.getAttribute('data-plan-id');
+                const planName = this.getAttribute('data-plan-name');
+                const planPrice = parseFloat(this.getAttribute('data-plan-price'));
+                
+                // Check if user has enough balance
+                if (userBalance < planPrice) {
+                    alert('Insufficient credits! You need $' + planPrice.toFixed(2) + ' but only have $' + userBalance.toFixed(2));
+                    return;
+                }
+                
+                // Set modal values
+                document.getElementById('purchase_plan_id').value = planId;
+                document.getElementById('purchase_plan_name').textContent = planName;
+                document.getElementById('purchase_price').textContent = '$' + planPrice.toFixed(2);
+                
+                // Show modal
+                purchaseModal.classList.add('active');
+            });
+        });
+        
+        closePurchaseBtn.addEventListener('click', function() {
+            purchaseModal.classList.remove('active');
+        });
+        
+        // Close modal on background click
+        purchaseModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

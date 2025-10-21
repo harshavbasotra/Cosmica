@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - <%= brandName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dashboard-page">
+    <%- include('partials/navbar') %>
+
+    <main class="main-content-full">
+        <div class="settings-container">
+            <div class="welcome-section">
+                <h1>Redeem Gift Card</h1>
+                <p>Enter a gift card code to add credits to your account</p>
+            </div>
+
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="alert alert-success">
+                    <%= success %>
+                </div>
+            <% } %>
+            
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <div class="server-card-new" style="max-width: 600px; margin: 2rem auto; padding: 2rem;">
+                <form action="/dashboard/redeem" method="POST" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    
+                    <div>
+                        <label for="code" style="color: rgba(255,255,255,0.7); display: block; margin-bottom: 0.75rem; font-weight: 500;">Gift Card Code</label>
+                        <input type="text" 
+                               id="code" 
+                               name="code" 
+                               required 
+                               placeholder="Enter your gift card code"
+                               style="width: 100%; padding: 1rem; background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 12px; color: white; font-family: inherit; font-size: 1rem; text-transform: uppercase;">
+                    </div>
+                    
+                    <button type="submit" class="btn-new-server" style="width: 100%; padding: 1rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                        Redeem Code
+                    </button>
+                </form>
+
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(139, 92, 246, 0.1);">
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: rgba(255,255,255,0.9);">How it works</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0; color: rgba(255,255,255,0.6); line-height: 1.8;">
+                        <li style="padding-left: 1.5rem; position: relative; margin-bottom: 0.5rem;">
+                            <svg style="position: absolute; left: 0; top: 0.25rem;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Enter your gift card code in the field above
+                        </li>
+                        <li style="padding-left: 1.5rem; position: relative; margin-bottom: 0.5rem;">
+                            <svg style="position: absolute; left: 0; top: 0.25rem;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Credits will be added to your account instantly
+                        </li>
+                        <li style="padding-left: 1.5rem; position: relative;">
+                            <svg style="position: absolute; left: 0; top: 0.25rem;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Use credits to purchase servers and resources
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include('partials/dock') %>
+</body>
+</html>

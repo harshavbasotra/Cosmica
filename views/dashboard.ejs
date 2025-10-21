@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - <%= brandName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dashboard-page">
+    <%- include('partials/navbar') %>
+
+    <main class="main-content-full">
+        <!-- Top Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item-inline">
+                <span class="stat-label-inline">Servers</span>
+                <span class="stat-value-inline"><%= servers ? servers.length : 0 %></span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item-inline">
+                <span class="stat-label-inline">CPU</span>
+                <span class="stat-value-inline"><%= resources ? resources.cpu : 0 %>%</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item-inline">
+                <span class="stat-label-inline">Memory</span>
+                <span class="stat-value-inline"><%= resources ? resources.memory : 0 %>MB</span>
+            </div>
+        </div>
+
+        <!-- Servers Section -->
+        <div class="servers-container">
+            <div class="welcome-section">
+                <h1>Welcome back, <%= user.email.split('@')[0] %></h1>
+                <p>Manage your infrastructure</p>
+            </div>
+
+            <div class="servers-header">
+                <h2>Servers</h2>
+                <div class="servers-actions">
+                    <button id="syncServersBtn" class="btn-sync-server">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                        Sync
+                    </button>
+                    <a href="/dashboard/instances" class="btn-new-server">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                        Purchase Instance
+                    </a>
+                </div>
+            </div>
+
+            <div class="servers-grid-new" id="serversList">
+            <% if (servers && servers.length > 0) { %>
+                <% servers.forEach(server => { %>
+                    <div class="server-card-new" data-server-id="<%= server.identifier %>">
+                        <div class="server-card-header">
+                            <div class="server-name-section">
+                                <h3><%= server.name %></h3>
+                                <span class="server-id"><%= server.uuid.substring(0, 8) %></span>
+                            </div>
+                            <div class="server-status-badge <%= server.status %>">
+                                <span class="status-dot-small"></span>
+                                <%= server.status %>
+                            </div>
+                        </div>
+                        <div class="server-card-stats">
+                            <div class="server-stat-item">
+                                <span class="stat-label-small">Memory</span>
+                                <span class="stat-value-small"><%= server.limits.memory %> MB</span>
+                            </div>
+                            <div class="server-stat-item">
+                                <span class="stat-label-small">Disk</span>
+                                <span class="stat-value-small"><%= server.limits.disk %> MB</span>
+                            </div>
+                            <div class="server-stat-item">
+                                <span class="stat-label-small">CPU</span>
+                                <span class="stat-value-small"><%= server.limits.cpu %>%</span>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="empty-state-new">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
+                    <h3>No servers</h3>
+                    <p>Create your first server to get started</p>
+                </div>
+            <% } %>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Sync servers functionality
+        const syncBtn = document.getElementById('syncServersBtn');
+        if (syncBtn) {
+            syncBtn.addEventListener('click', async function() {
+                const originalText = this.innerHTML;
+                const svg = this.querySelector('svg');
+                
+                // Disable button and show loading state
+                this.disabled = true;
+                this.style.opacity = '0.6';
+                if (svg) {
+                    svg.style.animation = 'spin 1s linear infinite';
+                }
+                this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite;"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg> Syncing...';
+                
+                try {
+                    const response = await fetch('/dashboard/api/sync-servers', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'CSRF-Token': '<%= csrfToken %>'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Reload the page to show updated servers
+                        location.reload();
+                    } else {
+                        alert('Sync failed: ' + (data.error || 'Unknown error'));
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                        this.style.opacity = '1';
+                    }
+                } catch (error) {
+                    console.error('Sync error:', error);
+                    alert('Failed to sync servers. Please try again.');
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                    this.style.opacity = '1';
+                }
+            });
+        }
+        
+        // Add spin animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Simple pagination
+        const serversPerPage = 5;
+        let currentPage = 1;
+        const serverCards = document.querySelectorAll('.server-card:not(.empty-state)');
+        const totalPages = Math.ceil(serverCards.length / serversPerPage);
+        
+        if (totalPages > 1) {
+            document.getElementById('totalPages').textContent = totalPages;
+            
+            function showPage(page) {
+                serverCards.forEach((card, index) => {
+                    if (index >= (page - 1) * serversPerPage && index < page * serversPerPage) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                document.getElementById('currentPage').textContent = page;
+                document.getElementById('prevPage').disabled = page === 1;
+                document.getElementById('nextPage').disabled = page === totalPages;
+            }
+            
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    showPage(currentPage);
+                }
+            });
+            
+            document.getElementById('nextPage').addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    showPage(currentPage);
+                }
+            });
+            
+            showPage(1);
+        }
+
+        // Manual refresh button functionality
+        // Auto-refresh disabled to prevent rate limiting
+        // Stats will update on page reload
+    </script>
+
+    <%- include('partials/dock') %>
+</body>
+</html>

@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - <%= brandName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dashboard-page">
+    <%- include('partials/navbar') %>
+
+    <main class="main-content-full">
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item-inline">
+                <span class="stat-label-inline">Total Users</span>
+                <span class="stat-value-inline"><%= stats.totalUsers %></span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item-inline">
+                <span class="stat-label-inline">Total Servers</span>
+                <span class="stat-value-inline"><%= stats.totalServers %></span>
+            </div>
+        </div>
+
+        <!-- Admin Content -->
+        <div class="servers-container">
+            <div class="welcome-section">
+                <h1>Admin Panel</h1>
+                <p>Manage users and system settings</p>
+            </div>
+
+            <!-- Admin Tabs -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="users">User Management</button>
+                <button class="admin-tab" data-tab="giftcards">Gift Cards</button>
+                <button class="admin-tab" data-tab="plans">Server Plans</button>
+            </div>
+
+            <!-- Users Tab -->
+            <div class="admin-tab-content" id="users-tab" style="display: block;">
+            <!-- System Settings -->
+            <div class="admin-section">
+                <div class="admin-section-header">
+                    <h2 class="admin-section-title">System Settings</h2>
+                </div>
+                
+                <div class="settings-grid">
+                    <!-- New User Bonus -->
+                    <div class="admin-card">
+                        <h3>New User Bonus</h3>
+                        <form action="/dashboard/admin/settings/bonus" method="POST">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            
+                            <div class="admin-form-group">
+                                <label class="checkbox-wrapper">
+                                    <span class="checkbox-label">Enable Bonus</span>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="enabled" <%= bonusSettings.enabled ? 'checked' : '' %>>
+                                        <span class="checkbox-slider"></span>
+                                    </label>
+                                </label>
+                            </div>
+                            
+                            <div class="admin-form-group">
+                                <label class="admin-form-label">Credits Amount</label>
+                                <input type="number" 
+                                       name="amount" 
+                                       value="<%= bonusSettings.amount %>" 
+                                       min="0" 
+                                       step="0.01"
+                                       placeholder="0.00"
+                                       class="admin-input">
+                            </div>
+                            
+                            <button type="submit" class="action-btn action-btn-primary" style="width: 100%;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                Save Settings
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <!-- End Users Tab -->
+
+            <!-- Gift Cards Tab -->
+            <div class="admin-tab-content" id="giftcards-tab" style="display: none;">
+            <!-- Gift Cards -->
+            <div class="admin-section">
+                <div class="admin-section-header">
+                    <h2 class="admin-section-title">Gift Cards</h2>
+                    <button class="action-btn action-btn-primary" id="openGiftCardModal">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Create Gift Card
+                    </button>
+                </div>
+
+            <div class="admin-table" style="margin-bottom: 3rem;">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Credits</th>
+                            <th>Uses</th>
+                            <th>Per User</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% giftCards.forEach(card => { %>
+                        <tr>
+                            <td><span class="gift-code"><%= card.code %></span></td>
+                            <td><strong style="color: #22c55e;">$<%= card.credits.toFixed(2) %></strong></td>
+                            <td><%= card.uses %>/<%= card.max_uses %></td>
+                            <td><%= card.per_user_limit %></td>
+                            <td><span class="role-badge <%= card.enabled ? 'admin' : 'user' %>"><%= card.enabled ? 'Active' : 'Disabled' %></span></td>
+                            <td><%= new Date(card.created_at).toLocaleDateString() %></td>
+                            <td>
+                                <div class="table-actions">
+                                    <button data-card-id="<%= card.id %>" 
+                                            data-enabled="<%= !card.enabled %>"
+                                            class="toggle-card-btn action-btn <%= card.enabled ? 'action-btn-danger' : 'action-btn-success' %>">
+                                        <%= card.enabled ? 'Disable' : 'Enable' %>
+                                    </button>
+                                    <button data-card-id="<%= card.id %>"
+                                            class="delete-card-btn action-btn action-btn-danger">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <% }); %>
+                        <% if (giftCards.length === 0) { %>
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.5);">No gift cards created yet</td>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+            </div>
+
+            <!-- Users -->
+            <div class="admin-section">
+                <div class="admin-section-header">
+                    <h2 class="admin-section-title">Users</h2>
+                </div>
+
+            <div class="admin-table">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Credits</th>
+                            <th>Role</th>
+                            <th>Pterodactyl ID</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <% users.forEach(u => { %>
+                        <tr class="user-row">
+                            <td><%= u.id %></td>
+                            <td><%= u.email %></td>
+                            <td>$<%= (u.credits || 0).toFixed(2) %></td>
+                            <td><span class="role-badge <%= u.role %>"><%= u.role %></span></td>
+                            <td><%= u.pterodactyl_id || 'N/A' %></td>
+                            <td><%= new Date(u.created_at).toLocaleDateString() %></td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+
+                <% if (users.length > 10) { %>
+                <div class="pagination" style="margin-top: 2rem;">
+                    <button class="pagination-btn" id="prevPageUsers" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                    <span class="pagination-info">Page <span id="currentPageUsers">1</span> of <span id="totalPagesUsers">1</span></span>
+                    <button class="pagination-btn" id="nextPageUsers">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+            </div>
+            <!-- End Gift Cards Tab -->
+
+            <!-- Server Plans Tab -->
+            <div class="admin-tab-content" id="plans-tab" style="display: none;">
+                <div class="admin-section">
+                    <div class="admin-section-header">
+                        <h2 class="admin-section-title">Server Plans</h2>
+                        <button class="action-btn action-btn-primary" id="openPlanModal">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Create Server Plan
+                        </button>
+                    </div>
+
+                    <div class="admin-table">
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Price / Cycle</th>
+                                    <th>Resources</th>
+                                    <th>Category</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (!plans || plans.length === 0) { %>
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                            No server plans found. Create your first plan!
+                                        </td>
+                                    </tr>
+                                <% } else { %>
+                                    <% plans.forEach(plan => { %>
+                                        <tr>
+                                            <td>
+                                                <div style="font-weight: 500;"><%= plan.name %></div>
+                                                <div style="font-size: 0.85rem; color: var(--text-secondary);"><%= plan.description || 'No description' %></div>
+                                            </td>
+                                            <td>
+                                                <div>$<%= plan.price.toFixed(2) %></div>
+                                                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6); text-transform: capitalize;"><%= plan.billing_cycle || 'monthly' %></div>
+                                            </td>
+                                            <td>
+                                                <div style="font-size: 0.85rem;">
+                                                    <div><%= plan.cpu %>% CPU</div>
+                                                    <div><%= plan.ram %>MB RAM</div>
+                                                    <div><%= plan.disk %>MB Disk</div>
+                                                </div>
+                                            </td>
+                                            <td><span class="status-badge <%= plan.category %>"><%= plan.category || 'general' %></span></td>
+                                            <td>
+                                                <% if (plan.stock_limit > 0) { %>
+                                                    <%= plan.stock_used %>/<%= plan.stock_limit %>
+                                                <% } else { %>
+                                                    <span style="color: var(--text-secondary);">Unlimited</span>
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <span class="status-badge <%= plan.enabled ? 'active' : 'suspended' %>">
+                                                    <%= plan.enabled ? 'Enabled' : 'Disabled' %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button class="action-btn action-btn-sm edit-plan-btn" 
+                                                    data-plan-id="<%= plan.id %>"
+                                                    data-plan='<%= JSON.stringify(plan) %>'>
+                                                    Edit
+                                                </button>
+                                                <form action="/dashboard/admin/plans/<%= plan.id %>/delete" method="POST" style="display: inline;" class="delete-plan-form">
+                                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                                    <button type="submit" class="action-btn action-btn-sm action-btn-danger">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- End Server Plans Tab -->
+
+</div>
+</main>
+
+    <%- include('partials/dock') %>
+
+    <!-- Create Gift Card Modal -->
+    <div id="createGiftCardModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Create Gift Card</h2>
+            </div>
+            
+            <form action="/dashboard/admin/gift-cards/create" method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Gift Card Code</label>
+                    <input type="text" 
+                           name="code" 
+                           required 
+                           placeholder="e.g., WELCOME2024"
+                           class="admin-input"
+                           style="text-transform: uppercase;">
+                </div>
+                
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Credits Amount</label>
+                    <input type="number" 
+                           name="credits" 
+                           required 
+                           min="0.01" 
+                           step="0.01" 
+                           placeholder="10.00"
+                           class="admin-input">
+                </div>
+                
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Maximum Uses</label>
+                    <input type="number" 
+                           name="max_uses" 
+                           required 
+                           min="1" 
+                           value="1"
+                           class="admin-input">
+                    <small style="color: rgba(255,255,255,0.5); font-size: 0.8125rem; margin-top: 0.25rem; display: block;">Total number of times this code can be redeemed</small>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Per User Limit</label>
+                    <input type="number" 
+                           name="per_user_limit" 
+                           required 
+                           min="1" 
+                           value="1"
+                           class="admin-input">
+                    <small style="color: rgba(255,255,255,0.5); font-size: 0.8125rem; margin-top: 0.25rem; display: block;">How many times each user can redeem this code</small>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="submit" class="action-btn action-btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Create Gift Card
+                    </button>
+                    <button type="button" id="closeGiftCardModal" class="btn-cancel">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Server Plan Modal -->
+    <div id="createPlanModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 900px; width: 95%;">
+            <div class="modal-header">
+                <h2 class="modal-title">Create Server Plan</h2>
+            </div>
+            
+            <form action="/dashboard/admin/plans/create" method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <!-- Left Column -->
+                    <div>
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Basic Information</h3>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Plan Name</label>
+                            <input type="text" name="name" required placeholder="e.g., Starter Plan" class="admin-input">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Description</label>
+                            <textarea name="description" placeholder="Brief description of the plan" class="admin-input" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Price ($)</label>
+                            <input type="number" name="price" required min="0" step="0.01" placeholder="5.00" class="admin-input">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Billing Cycle</label>
+                            <select name="billing_cycle" class="admin-input">
+                                <option value="one-time">One-Time</option>
+                                <option value="hourly">Hourly</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly" selected>Monthly</option>
+                                <option value="quarterly">Quarterly (3 months)</option>
+                                <option value="semi-annually">Semi-Annually (6 months)</option>
+                                <option value="annually">Annually (12 months)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Category</label>
+                            <select name="category" class="admin-input">
+                                <option value="general">General</option>
+                                <option value="minecraft">Minecraft</option>
+                                <option value="discord">Discord Bots</option>
+                                <option value="web">Web Hosting</option>
+                                <option value="game">Game Servers</option>
+                                <option value="storage">Storage</option>
+                                <option value="database">Database</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div>
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Resources</h3>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">CPU (%)</label>
+                            <input type="number" name="cpu" required min="0" placeholder="100" class="admin-input">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">RAM (MB)</label>
+                            <input type="number" name="ram" required min="0" placeholder="1024" class="admin-input">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Disk (MB)</label>
+                            <input type="number" name="disk" required min="0" placeholder="5120" class="admin-input">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Swap (MB)</label>
+                            <input type="number" name="swap" min="0" placeholder="0" value="0" class="admin-input">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">I/O Weight</label>
+                            <input type="number" name="io" min="10" max="1000" placeholder="500" value="500" class="admin-input">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Features Row -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Databases</label>
+                        <input type="number" name="databases" min="0" placeholder="0" value="0" class="admin-input">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Backups</label>
+                        <input type="number" name="backups" min="0" placeholder="0" value="0" class="admin-input">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Allocations</label>
+                        <input type="number" name="allocations" min="1" placeholder="1" value="1" class="admin-input">
+                    </div>
+                </div>
+                
+                <!-- Pterodactyl Configuration -->
+                <div style="margin-top: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Pterodactyl Configuration</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Egg ID</label>
+                            <input type="number" name="egg_id" required placeholder="1" class="admin-input">
+                            <small style="color: var(--text-secondary);">Find in Pterodactyl panel</small>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Location IDs (comma separated)</label>
+                            <input type="text" name="location_ids" required placeholder="1,2,3" class="admin-input">
+                            <small style="color: var(--text-secondary);">e.g., 1,2,3 for multiple locations</small>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Docker Image (optional)</label>
+                        <input type="text" name="docker_image" placeholder="ghcr.io/pterodactyl/yolks:java_17" class="admin-input">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Startup Command (optional)</label>
+                        <input type="text" name="startup_command" placeholder="java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar server.jar" class="admin-input">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Environment Variables (JSON, optional)</label>
+                        <textarea name="environment_variables" placeholder='{"MINECRAFT_VERSION": "latest"}' class="admin-input" rows="2"></textarea>
+                    </div>
+                </div>
+                
+                <!-- Limits -->
+                <div style="margin-top: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Limits & Settings</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">User Limit (0 = unlimited)</label>
+                            <input type="number" name="user_limit" min="0" placeholder="0" value="0" class="admin-input">
+                            <small style="color: var(--text-secondary);">Max instances per user</small>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Stock Limit (0 = unlimited)</label>
+                            <input type="number" name="stock_limit" min="0" placeholder="0" value="0" class="admin-input">
+                            <small style="color: var(--text-secondary);">Total available</small>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Sort Order</label>
+                            <input type="number" name="sort_order" min="0" placeholder="0" value="0" class="admin-input">
+                            <small style="color: var(--text-secondary);">Display order (lower first)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="checkbox-wrapper">
+                            <span class="checkbox-label">Enable Plan</span>
+                            <label class="custom-checkbox">
+                                <input type="checkbox" name="enabled" checked>
+                                <span class="checkbox-slider"></span>
+                            </label>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="submit" class="action-btn action-btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Create Plan
+                    </button>
+                    <button type="button" id="closePlanModal" class="btn-cancel">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Server Plan Modal -->
+    <div id="editPlanModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 900px; width: 95%;">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Server Plan</h2>
+            </div>
+            
+            <form id="editPlanForm" method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <!-- Left Column -->
+                    <div>
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Basic Information</h3>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Plan Name</label>
+                            <input type="text" id="edit_name" name="name" required placeholder="e.g., Starter Plan" class="admin-input">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Description</label>
+                            <textarea id="edit_description" name="description" placeholder="Brief description of the plan" class="admin-input" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Price ($)</label>
+                            <input type="number" id="edit_price" name="price" required min="0" step="0.01" placeholder="5.00" class="admin-input">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Billing Cycle</label>
+                            <select id="edit_billing_cycle" name="billing_cycle" class="admin-input">
+                                <option value="one-time">One-Time</option>
+                                <option value="hourly">Hourly</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="quarterly">Quarterly (3 months)</option>
+                                <option value="semi-annually">Semi-Annually (6 months)</option>
+                                <option value="annually">Annually (12 months)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Category</label>
+                            <select id="edit_category" name="category" class="admin-input">
+                                <option value="general">General</option>
+                                <option value="minecraft">Minecraft</option>
+                                <option value="discord">Discord Bots</option>
+                                <option value="web">Web Hosting</option>
+                                <option value="game">Game Servers</option>
+                                <option value="storage">Storage</option>
+                                <option value="database">Database</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div>
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Resources</h3>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">CPU (%)</label>
+                            <input type="number" id="edit_cpu" name="cpu" required min="0" placeholder="100" class="admin-input">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">RAM (MB)</label>
+                            <input type="number" id="edit_ram" name="ram" required min="0" placeholder="1024" class="admin-input">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Disk (MB)</label>
+                            <input type="number" id="edit_disk" name="disk" required min="0" placeholder="5120" class="admin-input">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Swap (MB)</label>
+                            <input type="number" id="edit_swap" name="swap" min="0" placeholder="0" value="0" class="admin-input">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">I/O Weight</label>
+                            <input type="number" id="edit_io" name="io" min="10" max="1000" placeholder="500" value="500" class="admin-input">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Features Row -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Databases</label>
+                        <input type="number" id="edit_databases" name="databases" min="0" placeholder="0" value="0" class="admin-input">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Backups</label>
+                        <input type="number" id="edit_backups" name="backups" min="0" placeholder="0" value="0" class="admin-input">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Allocations</label>
+                        <input type="number" id="edit_allocations" name="allocations" min="1" placeholder="1" value="1" class="admin-input">
+                    </div>
+                </div>
+                
+                <!-- Pterodactyl Configuration -->
+                <div style="margin-top: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Pterodactyl Configuration</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Egg ID</label>
+                            <input type="number" id="edit_egg_id" name="egg_id" required placeholder="1" class="admin-input">
+                            <small style="color: var(--text-secondary);">Find in Pterodactyl panel</small>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Location IDs (comma separated)</label>
+                            <input type="text" id="edit_location_ids" name="location_ids" required placeholder="1,2,3" class="admin-input">
+                            <small style="color: var(--text-secondary);">e.g., 1,2,3 for multiple locations</small>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Docker Image (optional)</label>
+                        <input type="text" id="edit_docker_image" name="docker_image" placeholder="ghcr.io/pterodactyl/yolks:java_17" class="admin-input">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Startup Command (optional)</label>
+                        <input type="text" id="edit_startup_command" name="startup_command" placeholder="java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar server.jar" class="admin-input">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="admin-form-label">Environment Variables (JSON, optional)</label>
+                        <textarea id="edit_environment_variables" name="environment_variables" placeholder='{"MINECRAFT_VERSION": "latest"}' class="admin-input" rows="2"></textarea>
+                    </div>
+                </div>
+                
+                <!-- Limits -->
+                <div style="margin-top: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Limits & Settings</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">User Limit (0 = unlimited)</label>
+                            <input type="number" id="edit_user_limit" name="user_limit" min="0" placeholder="0" value="0" class="admin-input">
+                            <small style="color: var(--text-secondary);">Max instances per user</small>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Stock Limit (0 = unlimited)</label>
+                            <input type="number" id="edit_stock_limit" name="stock_limit" min="0" placeholder="0" value="0" class="admin-input">
+                            <small style="color: var(--text-secondary);">Total available</small>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label class="admin-form-label">Sort Order</label>
+                            <input type="number" id="edit_sort_order" name="sort_order" min="0" placeholder="0" value="0" class="admin-input">
+                            <small style="color: var(--text-secondary);">Display order (lower first)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label class="checkbox-wrapper">
+                            <span class="checkbox-label">Enable Plan</span>
+                            <label class="custom-checkbox">
+                                <input type="checkbox" id="edit_enabled" name="enabled">
+                                <span class="checkbox-slider"></span>
+                            </label>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="submit" class="action-btn action-btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        Save Changes
+                    </button>
+                    <button type="button" id="closeEditPlanModal" class="btn-cancel">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Tab Switching
+        document.querySelectorAll('.admin-tab').forEach(button => {
+            button.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+                
+                // Hide all tabs
+                document.querySelectorAll('.admin-tab-content').forEach(tab => {
+                    tab.style.display = 'none';
+                });
+                
+                // Remove active class from all buttons
+                document.querySelectorAll('.admin-tab').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Show selected tab
+                document.getElementById(tabName + '-tab').style.display = 'block';
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+            });
+        });
+    
+        // Gift Card Modal controls
+        const modal = document.getElementById('createGiftCardModal');
+        const openBtn = document.getElementById('openGiftCardModal');
+        const closeBtn = document.getElementById('closeGiftCardModal');
+        
+        openBtn.addEventListener('click', function() {
+            modal.classList.add('active');
+        });
+        
+        closeBtn.addEventListener('click', function() {
+            modal.classList.remove('active');
+        });
+        
+        // Close modal on background click
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+        
+        // Gift card toggle handlers
+        document.querySelectorAll('.toggle-card-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const id = this.getAttribute('data-card-id');
+                const enabled = this.getAttribute('data-enabled') === 'true';
+                const csrfToken = '<%= csrfToken %>';
+                
+                try {
+                    const res = await fetch(`/dashboard/admin/gift-cards/${id}/toggle`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'CSRF-Token': csrfToken
+                        },
+                        body: JSON.stringify({ enabled })
+                    });
+                    
+                    if (res.ok) {
+                        location.reload();
+                    } else {
+                        alert('Failed to toggle gift card');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error toggling gift card');
+                }
+            });
+        });
+        
+        // Gift card delete handlers
+        document.querySelectorAll('.delete-card-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                if (!confirm('Are you sure you want to delete this gift card?')) return;
+                
+                const id = this.getAttribute('data-card-id');
+                const csrfToken = '<%= csrfToken %>';
+                
+                try {
+                    const res = await fetch(`/dashboard/admin/gift-cards/${id}/delete`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'CSRF-Token': csrfToken
+                        }
+                    });
+                    
+                    if (res.ok) {
+                        location.reload();
+                    } else {
+                        alert('Failed to delete gift card');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error deleting gift card');
+                }
+            });
+        });
+
+        // User pagination
+        const usersPerPage = 10;
+        let currentPageUsers = 1;
+        const userRows = document.querySelectorAll('.user-row');
+        const totalPagesUsers = Math.ceil(userRows.length / usersPerPage);
+        
+        if (totalPagesUsers > 1) {
+            document.getElementById('totalPagesUsers').textContent = totalPagesUsers;
+            
+            function showPageUsers(page) {
+                userRows.forEach((row, index) => {
+                    if (index >= (page - 1) * usersPerPage && index < page * usersPerPage) {
+                        row.style.display = 'table-row';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
+                document.getElementById('currentPageUsers').textContent = page;
+                document.getElementById('prevPageUsers').disabled = page === 1;
+                document.getElementById('nextPageUsers').disabled = page === totalPagesUsers;
+            }
+            
+            document.getElementById('prevPageUsers').addEventListener('click', () => {
+                if (currentPageUsers > 1) {
+                    currentPageUsers--;
+                    showPageUsers(currentPageUsers);
+                }
+            });
+            
+            document.getElementById('nextPageUsers').addEventListener('click', () => {
+                if (currentPageUsers < totalPagesUsers) {
+                    currentPageUsers++;
+                    showPageUsers(currentPageUsers);
+                }
+            });
+            
+            showPageUsers(1);
+        }
+        
+        // Plan Modal controls
+        const planModal = document.getElementById('createPlanModal');
+        const openPlanBtn = document.getElementById('openPlanModal');
+        const closePlanBtn = document.getElementById('closePlanModal');
+        
+        if (openPlanBtn) {
+            openPlanBtn.addEventListener('click', function() {
+                planModal.classList.add('active');
+            });
+        }
+        
+        if (closePlanBtn) {
+            closePlanBtn.addEventListener('click', function() {
+                planModal.classList.remove('active');
+            });
+        }
+        
+        // Close plan modal on background click
+        if (planModal) {
+            planModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        }
+        
+        // Edit plan button handlers
+        const editPlanModal = document.getElementById('editPlanModal');
+        const closeEditPlanBtn = document.getElementById('closeEditPlanModal');
+        const editPlanForm = document.getElementById('editPlanForm');
+        
+        document.querySelectorAll('.edit-plan-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const planId = this.getAttribute('data-plan-id');
+                const planData = JSON.parse(this.getAttribute('data-plan'));
+                
+                // Populate form with plan data
+                document.getElementById('edit_name').value = planData.name || '';
+                document.getElementById('edit_description').value = planData.description || '';
+                document.getElementById('edit_price').value = planData.price || '';
+                document.getElementById('edit_billing_cycle').value = planData.billing_cycle || 'monthly';
+                document.getElementById('edit_category').value = planData.category || 'general';
+                document.getElementById('edit_cpu').value = planData.cpu || '';
+                document.getElementById('edit_ram').value = planData.ram || '';
+                document.getElementById('edit_disk').value = planData.disk || '';
+                document.getElementById('edit_swap').value = planData.swap || 0;
+                document.getElementById('edit_io').value = planData.io || 500;
+                document.getElementById('edit_databases').value = planData.databases || 0;
+                document.getElementById('edit_backups').value = planData.backups || 0;
+                document.getElementById('edit_allocations').value = planData.allocations || 1;
+                document.getElementById('edit_egg_id').value = planData.egg_id || '';
+                document.getElementById('edit_location_ids').value = planData.location_ids || '';
+                document.getElementById('edit_docker_image').value = planData.docker_image || '';
+                document.getElementById('edit_startup_command').value = planData.startup_command || '';
+                document.getElementById('edit_environment_variables').value = planData.environment_variables || '';
+                document.getElementById('edit_user_limit').value = planData.user_limit || 0;
+                document.getElementById('edit_stock_limit').value = planData.stock_limit || 0;
+                document.getElementById('edit_sort_order').value = planData.sort_order || 0;
+                document.getElementById('edit_enabled').checked = planData.enabled || false;
+                
+                // Set form action to update endpoint
+                editPlanForm.action = `/dashboard/admin/plans/${planId}/update`;
+                
+                // Show modal
+                editPlanModal.classList.add('active');
+            });
+        });
+        
+        if (closeEditPlanBtn) {
+            closeEditPlanBtn.addEventListener('click', function() {
+                editPlanModal.classList.remove('active');
+            });
+        }
+        
+        // Close edit plan modal on background click
+        if (editPlanModal) {
+            editPlanModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        }
+        
+        // Delete plan form confirmation
+        document.querySelectorAll('.delete-plan-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('Delete this plan? This cannot be undone.')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

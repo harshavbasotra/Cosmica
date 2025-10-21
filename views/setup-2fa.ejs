@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - <%= brandName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card auth-card-split">
+            <div class="auth-left">
+                <h1 class="brand">Setup 2FA</h1>
+                <p class="subtitle">Secure your account with two-factor authentication.</p>
+                <div class="twofa-instructions">
+                    <h3>Instructions</h3>
+                    <ol>
+                        <li>Install an authenticator app</li>
+                        <li>Scan the QR code</li>
+                        <li>Enter the 6-digit code to verify</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="auth-right">
+                <% if (error) { %>
+                    <div class="alert alert-error">
+                        <%= error %>
+                    </div>
+                <% } %>
+
+                <% if (qrCode) { %>
+                    <div class="qr-code-container">
+                        <img src="<%= qrCode %>" alt="2FA QR Code" class="qr-code">
+                    </div>
+                <% } %>
+
+                <div class="secret-key">
+                    <p>Manual Entry Key</p>
+                    <code><%= secret %></code>
+                </div>
+
+                <form method="POST" action="/setup-2fa" class="auth-form">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    
+                    <div class="form-group">
+                        <label for="token">Verification Code</label>
+                        <input 
+                            type="text" 
+                            id="token" 
+                            name="token" 
+                            required 
+                            maxlength="6"
+                            pattern="[0-9]{6}"
+                            placeholder="000000"
+                            autocomplete="off"
+                            class="token-input"
+                        >
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Enable 2FA
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

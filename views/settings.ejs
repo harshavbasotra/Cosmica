@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - <%= brandName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dashboard-page">
+    <%- include('partials/navbar') %>
+
+    <main class="main-content-full">
+        <div class="settings-container">
+            <div class="welcome-section">
+                <h1>Account Settings</h1>
+                <p>Manage your account information</p>
+            </div>
+
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="alert alert-success">
+                    <%= success %>
+                </div>
+            <% } %>
+
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <div class="settings-grid">
+                <!-- Email Settings -->
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <h3>Email Address</h3>
+                        <p>Update your email address</p>
+                    </div>
+                    <form action="/dashboard/settings/email" method="POST" class="settings-form">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <div class="form-group">
+                            <label>Current Email</label>
+                            <input type="email" value="<%= user.email %>" disabled class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>New Email</label>
+                            <input type="email" name="email" required class="form-input" placeholder="Enter new email">
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm Password</label>
+                            <input type="password" name="password" required class="form-input" placeholder="Enter your password">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Email</button>
+                    </form>
+                </div>
+
+                <!-- Password Settings -->
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <h3>Password</h3>
+                        <p>Change your password</p>
+                    </div>
+                    <form action="/dashboard/settings/password" method="POST" class="settings-form">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" name="currentPassword" required class="form-input" placeholder="Enter current password">
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" name="newPassword" required class="form-input" placeholder="Enter new password">
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" name="confirmPassword" required class="form-input" placeholder="Confirm new password">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Password</button>
+                    </form>
+                </div>
+
+                <!-- Account Info -->
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <h3>Account Information</h3>
+                        <p>Your account details</p>
+                    </div>
+                    <div class="info-list">
+                        <div class="info-item">
+                            <span class="info-label">Account ID</span>
+                            <span class="info-value"><%= user.id %></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Role</span>
+                            <span class="info-value"><%= user.role %></span>
+                        </div>
+                        <% if (user.pterodactylId) { %>
+                        <div class="info-item">
+                            <span class="info-label">Pterodactyl ID</span>
+                            <span class="info-value"><%= user.pterodactylId %></span>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include('partials/dock') %>
+</body>
+</html>
