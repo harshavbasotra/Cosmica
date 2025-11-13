@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - <%= brandName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .pricing-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .pricing-header h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .pricing-header p {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .comparison-table-wrapper {
+            overflow-x: auto;
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(59, 130, 246, 0.02));
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .comparison-table thead tr {
+            border-bottom: 2px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .comparison-table th {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.05));
+        }
+
+        .comparison-table th:first-child {
+            text-align: left;
+            background: transparent;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .comparison-table tbody tr {
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .comparison-table tbody tr:hover {
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .comparison-table tbody tr.category-header {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.08));
+            border-top: 2px solid rgba(139, 92, 246, 0.3);
+            border-bottom: 2px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .comparison-table tbody tr.category-header:hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.1));
+        }
+
+        .comparison-table tbody tr.category-header td {
+            padding: 1.5rem 1.5rem;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #a5b4fc;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .comparison-table td {
+            padding: 1.25rem 1.5rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9375rem;
+        }
+
+        .comparison-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .check-icon {
+            color: #22c55e;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .cross-icon {
+            color: #ef4444;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .plan-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            border-radius: 100px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-badge.starter {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+        }
+
+        .plan-badge.professional {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .plan-badge.business {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        }
+
+        .plan-badge.enterprise {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        @media (max-width: 768px) {
+            .pricing-header h1 {
+                font-size: 2rem;
+            }
+
+            .pricing-header p {
+                font-size: 1rem;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 1rem 0.75rem;
+                font-size: 0.875rem;
+            }
+
+            .comparison-table th:first-child,
+            .comparison-table td:first-child {
+                padding-left: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="dashboard-page">
+    <%- include('partials/navbar') %>
+
+    <main class="main-content-full">
+        <div class="pricing-container">
+            <div class="pricing-header">
+                <h1>Feature Comparison</h1>
+                <p>Compare our comprehensive platform features across different tiers to find the perfect fit for your needs.</p>
+            </div>
+
+            <div class="comparison-table-wrapper">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Features</th>
+                            <th>
+                                <span class="plan-badge starter">Starter</span>
+                                <div style="margin-top: 0.5rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">Free</div>
+                            </th>
+                            <th>
+                                <span class="plan-badge professional">Professional</span>
+                                <div style="margin-top: 0.5rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">$9.99/mo</div>
+                            </th>
+                            <th>
+                                <span class="plan-badge business">Business</span>
+                                <div style="margin-top: 0.5rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">$29.99/mo</div>
+                            </th>
+                            <th>
+                                <span class="plan-badge enterprise">Enterprise</span>
+                                <div style="margin-top: 0.5rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">Custom</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Core Dashboard Features -->
+                        <tr class="category-header">
+                            <td colspan="5">Core Dashboard Features</td>
+                        </tr>
+                        <tr>
+                            <td>Basic Dashboard Functions</td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>J4R (Join for Rewards)</td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>L4R (Linkvertise, Shareus, etc.)</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>AFK Page</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Referrals</td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Code Redemption</td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Coin Sharing</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+
+                        <!-- Advanced Features -->
+                        <tr class="category-header">
+                            <td colspan="5">Advanced Features</td>
+                        </tr>
+                        <tr>
+                            <td>Own SDK (Plugins)</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Full WebUI Management</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Real-time Native UI Experience</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Zero Trust AI Security</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>At-a-Glance Analytics</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Full Activity Backlog</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Backup System + Cloud</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Leaderboards</td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Advanced Ticket System</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+
+                        <!-- Enhanced Functionality -->
+                        <tr class="category-header">
+                            <td colspan="5">Enhanced Functionality</td>
+                        </tr>
+                        <tr>
+                            <td>Coin Sharing with Fees</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Public/Private Profiles</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Cloudflare Turnstile</td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Firewall (AntiVPN, AntiAlting, AntiProxy)</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Linking (Discord, GitHub, Google, Facebook)</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>2FA Security</td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Social Integration</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Custom Resource Selling</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+
+                        <!-- Advanced Technologies -->
+                        <tr class="category-header">
+                            <td colspan="5">Advanced Technologies</td>
+                        </tr>
+                        <tr>
+                            <td>Advanced Glass Lookup Technology</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Max Resources</td>
+                            <td>Limited</td>
+                            <td>Standard</td>
+                            <td>Enhanced</td>
+                            <td>Unlimited</td>
+                        </tr>
+                        <tr>
+                            <td>Billing Integration (Stripe, PayPal)</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Announcements Support</td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Redirection Links</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Mail Templates (Editor)</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Departments Support</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+
+                        <!-- System Integration -->
+                        <tr class="category-header">
+                            <td colspan="5">System Integration</td>
+                        </tr>
+                        <tr>
+                            <td>Auto Pterodactyl Import</td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Pterodactyl Wrappers (No More IDs)</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Zero Data Deletion Policy</td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Anti Overwrite (Lock Based)</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Health-Based Monitoring</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Built-in Debugger/Helper</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>AI Assistant</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Support PIN Integration</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+
+                        <!-- User Experience -->
+                        <tr class="category-header">
+                            <td colspan="5">User Experience</td>
+                        </tr>
+                        <tr>
+                            <td>Multiple Layout Support</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Server Splitting</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Multiple Language Support</td>
+                            <td>EN only</td>
+                            <td>EN, DE, FR</td>
+                            <td>EN, DE, FR, RO, ES</td>
+                            <td>All (EN, DE, FR, RO, ES, MD)</td>
+                        </tr>
+                        <tr>
+                            <td>Image Hosting</td>
+                            <td><span class="cross-icon">✗</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                            <td><span class="check-icon">✓</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <%- include('partials/dock') %>
+</body>
+</html>

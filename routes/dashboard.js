@@ -474,13 +474,42 @@ router.post('/admin/gift-cards/:id/toggle', requireAdmin, async (req, res) => {
 router.post('/admin/gift-cards/:id/delete', requireAdmin, async (req, res) => {
     const db = req.app.locals.db;
     const { id } = req.params;
-    
+
     try {
         await db.deleteGiftCard(id);
         res.json({ success: true });
     } catch (error) {
         console.error('Delete gift card error:', error);
         res.status(500).json({ error: 'Failed to delete gift card' });
+    }
+});
+
+// Pricing/Features comparison page
+router.get('/pricing', require2FA, async (req, res) => {
+    const db = req.app.locals.db;
+
+    try {
+        const user = await db.getUserById(req.session.userId);
+        if (!user) {
+            return res.redirect('/login');
+        }
+
+        res.render('pricing', {
+            title: 'Feature Comparison',
+            brandName: req.app.locals.config.branding.name,
+            user: {
+                id: user.id,
+                email: user.email || 'user',
+                role: user.role || 'user',
+                credits: user.credits || 0
+            },
+            panelUrl: req.app.locals.config.pterodactyl.url,
+            csrfToken: req.csrfToken(),
+            activePage: 'pricing'
+        });
+    } catch (error) {
+        console.error('Pricing page error:', error);
+        res.redirect('/dashboard');
     }
 });
 
